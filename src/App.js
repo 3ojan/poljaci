@@ -1,24 +1,24 @@
-import logo from './logo.svg';
+import React, { useEffect, useState, useRef } from 'react';
 import './App.css';
+import { Router, Route, Link, IndexRoute } from 'react-router'
+import { Provider } from 'react-redux';
+import store from "./store/index";
+import { history } from './store';
+import Home from './components/Home/Home';
+import './main.scss';
 
 function App() {
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+      <div className="main-wrapper">
+        <Router history={history}>
+          <Route exact path="/" component={Home} />
+          {/* <Route exact path="/quiz" component={Quiz} />
+          <Route path="/results" component={Results} /> */}
+        </Router>
+      </div>
+    </Provider>
   );
 }
 
