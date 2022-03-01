@@ -36,7 +36,7 @@ describe('Home component', () => {
       <Home history={{ push: jest.fn }}></Home>
     </Provider >, container);
     const button = container.querySelector('.button');
-    expect(button.className).toBe('button is-warning is-outlined')
+    expect(button.className).toBe('button is-primary')
   });
 
 });

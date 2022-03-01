@@ -1,4 +1,7 @@
 
+/** this is not used , just a showcase for combining reducers */
+
+
 import { gameLogicActions } from '../actions/gameLogic'
 
 const initialState = {
