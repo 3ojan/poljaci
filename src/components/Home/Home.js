@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { connect, useSelector } from "react-redux";
-import { fetchData } from '../../actions/apiQuestions';
+import { addItem, customSetFetchedData, fetchData, setFetchedData } from '../../actions/apiQuestions';
+import { setSelectedItem } from '../../actions/items';
+import NewItem from './NewItem';
 
 const addNewData = (onClick) => {
   return (<div>
@@ -34,80 +37,21 @@ const createTable = (data, editCallback, deleteCallback) => {
   </table>
 }
 
-const editmodal = (item, onEditItem, onCancel, onSave) => {
-  const { name, id, email, username } = item;
-  return (<div className="modal">
-    <div className="modal-background"></div>
-    <div className="modal-content">
-      <div className="field">
-        <label className="label">ID</label>
-        <div className="control">
-          <input className="input" type="text" placeholder={item.id} disabled />
-        </div>
-      </div>
-
-      <div className="field">
-        <label className="label">Name</label>
-        <div className="control">
-          <input className="input" type="name" placeholder={item.name} onChange={(event) => { onEditItem("name", event.target.value) }} />
-        </div>
-      </div>
-
-      <div className="field">
-        <label className="label">Username</label>
-        <div className="control">
-          <input className="input" type="name" placeholder={item.username} onChange={(event) => { onEditItem("username", event.target.value) }} />
-        </div>
-      </div>
-
-      <div className="field">
-        <label className="label">Email</label>
-        <div className="control">
-          <input className="input" type="name" placeholder={item.email} onChange={(event) => { onEditItem("email", event.target.value) }} />
-        </div>
-      </div>
-      <div className="field">
-        <button className="button is-success" onClick={onSave}>Save</button>
-        <button className="button is-warning" onClick={onCancel}>Cancel</button>
-      </div>
-    </div>
-    <button className="modal-close is-large" aria-label="close" onClick={onCancel}></button>
-  </div>)
-}
-const addModal = (id, onEditItem, onCancel, onSave) => {
+const deleteModal = (onCancel, item, onDelete) => {
   return (
     <div className="modal">
       <div className="modal-background"></div>
       <div className="modal-content">
         <div className="field">
-          <label className="label">ID</label>
+          <label className="label">Are you sure you want to delete ?</label>
           <div className="control">
-            <input className="input" type="text" disabled placeholder={id} />
-          </div>
-        </div>
-
-        <div className="field">
-          <label className="label">Name</label>
-          <div className="control">
-            <input className="input" type="name" onChange={(event) => { onEditItem("name", event.target.value) }} />
-          </div>
-        </div>
-
-        <div className="field">
-          <label className="label">Username</label>
-          <div className="control">
-            <input className="input" type="name" onChange={(event) => { onEditItem("username", event.target.value) }} />
-          </div>
-        </div>
-
-        <div className="field">
-          <label className="label">Email</label>
-          <div className="control">
-            <input className="input" type="name" onChange={(event) => { onEditItem("email", event.target.value) }} />
+            <input className="input" type="text" placeholder={item.id} disabled />
+            <input className="input" type="text" placeholder={item.name} disabled />
+            <input className="input" type="text" placeholder={item.email} disabled />
           </div>
         </div>
         <div className="field">
-          <button className="button is-success" onClick={onSave}>Save</button>
+          <button className="button is-danger" onClick={() => { onDelete(item) }}>Delete</button>
           <button className="button is-warning" onClick={onCancel}>Cancel</button>
         </div>
       </div>
@@ -115,53 +59,46 @@ const addModal = (id, onEditItem, onCancel, onSave) => {
     </div>)
 }
 
+const addNewModalForm = (onSubmit, onCancel) => {
+  return <NewItem onSubmit={onSubmit} onCancel={onCancel}></NewItem >
+}
 
 function Home(props) {
-  const { fetchData } = props;
+  const { fetchData, setSelectedItem, customSetFetchedData, addItem } = props;
   const loading = useSelector(state => state.fetchApi.loading);
   const fetchedData = useSelector(state => state.fetchApi.data);
 
-  const [state, setState] = useState({ selectedItem: null, modalVisible: false, data: [], newItem: null, newModalVisible: false })
+  const [state, setState] = useState({ selectedItem: null, modalVisible: false, data: [], itemToDelete: null, newModalVisible: false })
 
   useEffect(() => {
-    setState({ ...state, data: fetchedData })
-  }, [fetchedData]) // set the relation between redux campaign and local state
-
-
-  useEffect(() => {
-    fetchData();
+    console.log(fetchedData)
+    if (!fetchedData || fetchedData.length === 0) {
+      fetchData();
+    }
     return () => {
     };
   }, []);
 
   const onCancel = () => {
-    setState({ ...state, modalVisible: false, newModalVisible: false });
+    setState({ ...state, deleteModalVisible: false, itemToDelete: null, newModalVisible: false });
   }
-  const onSave = () => {
-    const item = { ...state };
-    const { selectedItem } = item;
-    const newData = state.data.filter(item => item.id !== selectedItem.id);
-    newData.push(selectedItem);
-    setState({ ...state, data: newData, modalVisible: false });
+  const onSubmit = (values) => {
+    addItem({
+      ...values
+    });
+    onCancel();
   }
-  const onSaveNew = () => {
-    const _state = { ...state };
-    const { newItem } = _state;
-    _state.data.push(newItem);
-    setState({ ...state, _state, newModalVisible: false });
-  }
+
 
   const onDelete = (dataItem) => {
-    const newData = state.data.filter(item => item.id !== dataItem.id);
-    setState({ ...state, data: newData });
+    setState({ ...state, deleteModalVisible: true, itemToDelete: dataItem });
+  }
+  const confirmDelete = (dataItem) => {
+    const newData = fetchedData.filter(item => item.id !== dataItem.id);
+    customSetFetchedData(newData)
+    setState({ ...state, deleteModalVisible: false, itemToDelete: null });
   }
 
-  const onEditSelectedItem = (key, value) => {
-    const item = { ...state };
-    const { selectedItem } = item;
-    selectedItem[key] = value;
-    setState({ ...state, selectedItem })
-  }
   const onEditNew = (key, value) => {
     const _state = { ...state };
     const { newItem } = _state;
@@ -172,7 +109,8 @@ function Home(props) {
 
   const onEdit = (dataItem) => {
     // setSelectedItem(dataItem);
-    setState({ ...state, selectedItem: { ...dataItem }, modalVisible: true })
+    setSelectedItem(dataItem)
+    props.history.push('/edit')
   };
 
 
@@ -187,22 +125,26 @@ function Home(props) {
         {addNewData(() => {
           setState({ ...state, newItem: {}, newModalVisible: true })
         })}
-        {createTable(state.data, onEdit, onDelete)}
+        {createTable(fetchedData, onEdit, onDelete)}
       </div>
-        {state.modalVisible && editmodal(state.selectedItem, onEditSelectedItem, onCancel, onSave)}
-        {state.newModalVisible && addModal(state.data.length + 1, onEditNew, onCancel, onSaveNew)}
+        {state.deleteModalVisible && deleteModal(onCancel, state.itemToDelete, confirmDelete)}
+        {state.newModalVisible && addNewModalForm(onSubmit, onCancel)}
       </>
     )
   );
 }
 
 const mapStateToProps = state => {
-  const { questions } = state;
-  return { questions: questions };
+  const { editable } = state;
+  return { editable: editable };
 };
 
 const mapDispatchToProps = dispatch => ({
   fetchData: () => dispatch(fetchData(dispatch)),
+  setSelectedItem: (item) => dispatch(setSelectedItem(item)),
+  setFetchedData: (payload) => dispatch(setFetchedData(payload)),
+  customSetFetchedData: (payload) => dispatch(customSetFetchedData(payload)),
+  addItem: (payload) => dispatch(addItem(payload)),
 });
 
 

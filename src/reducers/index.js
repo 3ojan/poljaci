@@ -1,6 +1,6 @@
 import { combineReducers } from "redux";
 import fetchApi from './fetchApi';
-import gameLogic from './gameLogic';
+import editable from './editable';
 
-export default combineReducers({ fetchApi, gameLogic });
+export default combineReducers({ fetchApi, editable });
 

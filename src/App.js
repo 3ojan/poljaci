@@ -6,6 +6,7 @@ import store from "./store/index";
 import { history } from './store';
 import Home from './components/Home/Home';
 import './main.scss';
+import Edit from './components/Edit/Edit';
 
 function App() {
 
@@ -14,8 +15,8 @@ function App() {
       <div className="main-wrapper">
         <Router history={history}>
           <Route exact path="/" component={Home} />
-          {/* <Route exact path="/quiz" component={Quiz} />
-          <Route path="/results" component={Results} /> */}
+          <Route exact path="/edit" component={Edit} />
+          {/* <Route path="/results" component={Results} /> */}
         </Router>
       </div>
     </Provider>
